@@ -29,7 +29,10 @@ import pandas as pd
 import os
 import csv
 from tqdm import tqdm
+
 import torch
+import torch.nn.functional as F
+
 def same_seed(seed):
     '''Fixes random number generator seeds for reproducibility.'''
     torch.backends.cudnn.deterministic = True
@@ -98,16 +101,17 @@ class My_Model(nn.Module):
     def __init__(self, input_dim):
         super(My_Model, self).__init__()
         # TODO: modify model's structure, be aware of dimensions.
-        self.layers = nn.Sequential(
-            nn.Linear(input_dim, 8),
-            nn.ReLU(),
-            nn.Linear(8, 4),
-            nn.ReLU(),
-            nn.Linear(4, 1)
-        )
+        self.state_layer0 = nn.Linear(37, 1)
+        self.feat_layer0 = nn.Linear(input_dim-37+1, 8)
+        self.layer2 = nn.Linear(8, 4)
+        self.layer3 = nn.Linear(4, 1)
 
     def forward(self, x):
-        x = self.layers(x)
+        x1 = F.relu(self.state_layer0(x[:,:37]))
+        x = torch.cat((x1,x[:,37:]),1)
+        x = F.relu(self.feat_layer0(x))
+        x = F.relu(self.layer2(x))
+        x = F.relu(self.layer3(x))
         x = x.squeeze(1)  # (B, 1) -> (B)
         return x
 
@@ -148,7 +152,7 @@ def trainer(train_loader, valid_loader, model, config, device):
     # TODO: Please check https://pytorch.org/docs/stable/optim.html to get more available algorithms.
     # TODO: L2 regularization (optimizer(weight decay...) or implement by your self).
     optimizer = torch.optim.SGD(
-        model.parameters(), lr=config['learning_rate'], weight_decay=1e-7, momentum=0.9, )
+        model.parameters(), lr=config['learning_rate'], momentum=0.9)
 
     # writer = SummaryWriter() # Writer of tensoboard.
 
@@ -222,7 +226,7 @@ def trainer(train_loader, valid_loader, model, config, device):
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 config = {
     'seed': 20040603,      # Your seed number, you can pick your lucky number. :)
-    'select_all': False,   # Whether to use all features.
+    'select_all': True,   # Whether to use all features.
     'valid_ratio': 0.2,   # validation_size = train_size * valid_ratio
     'n_epochs': 10000,     # Number of epochs.
     'batch_size': 256,
