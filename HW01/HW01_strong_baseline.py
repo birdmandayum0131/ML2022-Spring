@@ -99,16 +99,9 @@ class My_Model(nn.Module):
         super(My_Model, self).__init__()
         # TODO: modify model's structure, be aware of dimensions.
         self.layers = nn.Sequential(
-            nn.BatchNorm1d(num_features=input_dim),
             nn.Linear(input_dim, 8),
             nn.ReLU(),
-            nn.Linear(8, 8),
-            nn.ReLU(),
             nn.Linear(8, 4),
-            nn.ReLU(),
-            nn.Linear(4, 4),
-            nn.ReLU(),
-            nn.Linear(4, 4),
             nn.ReLU(),
             nn.Linear(4, 1)
         )
