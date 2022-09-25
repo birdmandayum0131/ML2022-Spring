@@ -221,7 +221,7 @@ def trainer(train_loader, valid_loader, model, config, device):
 '''Configurations'''
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 config = {
-    'seed': 5201314,      # Your seed number, you can pick your lucky number. :)
+    'seed': 20040603,      # Your seed number, you can pick your lucky number. :)
     'select_all': False,   # Whether to use all features.
     'valid_ratio': 0.2,   # validation_size = train_size * valid_ratio
     'n_epochs': 3000,     # Number of epochs.
