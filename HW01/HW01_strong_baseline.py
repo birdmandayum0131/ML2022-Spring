@@ -99,11 +99,18 @@ class My_Model(nn.Module):
         super(My_Model, self).__init__()
         # TODO: modify model's structure, be aware of dimensions.
         self.layers = nn.Sequential(
-            nn.Linear(input_dim, 16),
+            nn.BatchNorm1d(num_features=input_dim),
+            nn.Linear(input_dim, 8),
             nn.ReLU(),
-            nn.Linear(16, 8),
+            nn.Linear(8, 8),
             nn.ReLU(),
-            nn.Linear(8, 1)
+            nn.Linear(8, 4),
+            nn.ReLU(),
+            nn.Linear(4, 4),
+            nn.ReLU(),
+            nn.Linear(4, 4),
+            nn.ReLU(),
+            nn.Linear(4, 1)
         )
 
     def forward(self, x):
