@@ -104,7 +104,7 @@ class My_Model(nn.Module):
         super(My_Model, self).__init__()
         # TODO: modify model's structure, be aware of dimensions.
         self.state_analyze_layer = nn.Sequential(
-            nn.Linear(37, 6),
+            nn.Linear(37, 4),
             nn.Softmax(dim=1),
         )
         self.essemble_layers = nn.ModuleList(
@@ -113,11 +113,19 @@ class My_Model(nn.Module):
                     nn.Linear(input_dim - 37, 16),
                     nn.ReLU(),
                     nn.BatchNorm1d(num_features=16),
-                    nn.Linear(16, 4),
+                    nn.Linear(16, 16),
                     nn.ReLU(),
-                    nn.Linear(4, 1),
+                    nn.Linear(16, 16),
+                    nn.ReLU(),
+                    nn.Linear(16, 16),
+                    nn.ReLU(),
+                    nn.Linear(16, 16),
+                    nn.ReLU(),
+                    nn.Linear(16, 16),
+                    nn.ReLU(),
+                    nn.Linear(16, 1),
                 )
-                for _ in range(6)
+                for _ in range(4)
             ]
         )
 
