@@ -107,12 +107,12 @@ class My_Model(nn.Module):
             nn.Linear(37, 6),
             nn.Softmax(dim=1),
         )
-        self.BNormLayer = nn.BatchNorm1d(num_features=input_dim-37)
         self.essemble_layers = nn.ModuleList(
             [
                 nn.Sequential(
                     nn.Linear(input_dim - 37, 16),
                     nn.ReLU(),
+                    nn.BatchNorm1d(num_features=16),
                     nn.Linear(16, 4),
                     nn.ReLU(),
                     nn.Linear(4, 1),
@@ -125,7 +125,6 @@ class My_Model(nn.Module):
         x0 = x[:, :37]  # (B, 37)
         x1 = x[:, 37:]  # (B, 80)
         x0 = self.state_analyze_layer(x0)  # (B, 37)
-        x1 = self.BNormLayer(x1)
         x1 = [layer(x1) for layer in self.essemble_layers]  # (B, 1) * 37
         x1 = torch.cat(x1, dim=1)  # (B, 37)
         x = x0 * x1  # (B, 37)
@@ -259,7 +258,7 @@ config = {
     "seed": 20040603,  # Your seed number, you can pick your lucky number. :)
     "select_all": True,  # Whether to use all features.
     "valid_ratio": 0.2,  # validation_size = train_size * valid_ratio
-    "n_epochs": 10000,  # Number of epochs.
+    "n_epochs": 3000,  # Number of epochs.
     "batch_size": 256,
     "learning_rate": 1e-5,
     # If model has not improved for this many consecutive epochs, stop training.
