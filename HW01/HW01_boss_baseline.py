@@ -104,9 +104,10 @@ class My_Model(nn.Module):
         super(My_Model, self).__init__()
         # TODO: modify model's structure, be aware of dimensions.
         self.state_analyze_layer = nn.Sequential(
-            nn.Linear(37, 37),
+            nn.Linear(37, 6),
             nn.Softmax(dim=1),
         )
+        self.BNormLayer = nn.BatchNorm1d(num_features=input_dim-37)
         self.essemble_layers = nn.ModuleList(
             [
                 nn.Sequential(
@@ -116,19 +117,20 @@ class My_Model(nn.Module):
                     nn.ReLU(),
                     nn.Linear(4, 1),
                 )
-                for _ in range(37)
+                for _ in range(6)
             ]
         )
 
     def forward(self, x):
-        x0 = x[:, :37] #(B, 37)
-        x1 = x[:, 37:] #(B, 80)
-        x0 = self.state_analyze_layer(x0) #(B, 37)
-        x1 = [self.essemble_layers[i](x1) for i in range(37)] #(B, 1) * 37
-        x1 = torch.cat(x1, dim=1) #(B, 37)
-        x = x0 * x1 #(B, 37)
-        x = torch.sum(x, dim=1) #(B, 1)
-        #x = x.squeeze(1)  # (B, 1) -> (B)
+        x0 = x[:, :37]  # (B, 37)
+        x1 = x[:, 37:]  # (B, 80)
+        x0 = self.state_analyze_layer(x0)  # (B, 37)
+        x1 = self.BNormLayer(x1)
+        x1 = [layer(x1) for layer in self.essemble_layers]  # (B, 1) * 37
+        x1 = torch.cat(x1, dim=1)  # (B, 37)
+        x = x0 * x1  # (B, 37)
+        x = torch.sum(x, dim=1)  # (B, 1)
+        # x = x.squeeze(1)  # (B, 1) -> (B)
         return x
 
 
