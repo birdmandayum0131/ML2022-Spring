@@ -216,7 +216,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 
 ### Training
-train_loss_list, val_loss_list = [], []
+train_loss_list, val_loss_list, lrs = [], [], []
 best_acc = 0.0
 for epoch in range(num_epoch):
     train_acc = 0.0
@@ -264,6 +264,7 @@ for epoch in range(num_epoch):
             
             train_loss_list.append(train_loss/len(train_loader))
             val_loss_list.append(val_loss/len(val_loader))
+            lrs.append(optimizer.param_groups[0]["lr"])
             
             # if the model improves, save a checkpoint at this epoch
             if val_acc > best_acc:
@@ -286,13 +287,15 @@ gc.collect()
 '''@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'''
 import matplotlib.pyplot as plt
 '''Plot learning curves with matplotlib'''
-fig, (trainAxe, valAxe) = plt.subplots(1, 2, figsize=(22, 6))
+fig, (trainAxe, valAxe, lrAxe) = plt.subplots(1, 3, figsize=(33, 6))
 fig.supxlabel('Epoch')
 fig.supylabel('Loss')
 trainAxe.set_title('Loss/train')
 valAxe.set_title('Loss/validate')
+lrAxe.set_title("Learning rate")
 trainAxe.plot(train_loss_list)
 valAxe.plot(val_loss_list)
+lrAxe.plot(lrs)
 plt.show()
 
 '''@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'''
