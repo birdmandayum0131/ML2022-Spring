@@ -163,14 +163,14 @@ train_ratio = 0.8               # the ratio of data used for training, the rest 
 
 # training parameters
 seed = 20040603                        # random seed
-batch_size = 512                # batch size
-num_epoch = 50                   # the number of training epoch
+batch_size = 128                # batch size
+num_epoch = 100                   # the number of training epoch
 learning_rate = 0.0001          # learning rate
 model_path = './model.ckpt'     # the path where the checkpoint will be saved
 
 # model parameters
 input_dim = 39 * concat_nframes # the input dim of the model, you should not change the value
-hidden_layers = 1               # the number of hidden layers
+hidden_layers = 3               # the number of hidden layers
 hidden_dim = 256                # the hidden dim
 
 ### Prepare dataset and model
@@ -216,7 +216,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 
 ### Training
-
+train_loss_list, val_loss_list = [], []
 best_acc = 0.0
 for epoch in range(num_epoch):
     train_acc = 0.0
@@ -261,7 +261,10 @@ for epoch in range(num_epoch):
             print('[{:03d}/{:03d}] Train Acc: {:3.6f} Loss: {:3.6f} | Val Acc: {:3.6f} loss: {:3.6f}'.format(
                 epoch + 1, num_epoch, train_acc/len(train_set), train_loss/len(train_loader), val_acc/len(val_set), val_loss/len(val_loader)
             ))
-
+            
+            train_loss_list.append(train_loss/len(train_loader))
+            val_loss_list.append(val_loss/len(val_loader))
+            
             # if the model improves, save a checkpoint at this epoch
             if val_acc > best_acc:
                 best_acc = val_acc
@@ -279,6 +282,21 @@ if len(val_set) == 0:
 
 del train_loader, val_loader
 gc.collect()
+
+'''@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'''
+import matplotlib.pyplot as plt
+'''Plot learning curves with matplotlib'''
+fig, (trainAxe, valAxe) = plt.subplots(1, 2, figsize=(22, 6))
+fig.supxlabel('Epoch')
+fig.supylabel('Loss')
+trainAxe.set_title('Loss/train')
+valAxe.set_title('Loss/validate')
+trainAxe.plot(train_loss_list)
+valAxe.plot(val_loss_list)
+plt.show()
+
+'''@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'''
+
 
 ### Testing
 '''Create a testing dataset, and load model from the saved checkpoint.'''
