@@ -266,6 +266,10 @@ for epoch in range(num_epoch):
             val_loss_list.append(val_loss/len(val_loader))
             lrs.append(optimizer.param_groups[0]["lr"])
             
+            if epoch % 30 == 0:
+                for g in optimizer.param_groups:
+                    g['lr'] *= 0.3
+            
             # if the model improves, save a checkpoint at this epoch
             if val_acc > best_acc:
                 best_acc = val_acc
