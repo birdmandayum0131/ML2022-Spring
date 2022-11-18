@@ -158,19 +158,19 @@ class Classifier(nn.Module):
 
 ### Hyper-parameters
 # data prarameters
-concat_nframes = 5              # the number of frames to concat with, n must be odd (total 2k+1 = n frames)
+concat_nframes = 31              # the number of frames to concat with, n must be odd (total 2k+1 = n frames)
 train_ratio = 0.8               # the ratio of data used for training, the rest will be used for validation
 
 # training parameters
 seed = 20040603                        # random seed
-batch_size = 128                # batch size
-num_epoch = 100                   # the number of training epoch
-learning_rate = 0.0001          # learning rate
+batch_size = 512                # batch size
+num_epoch = 10                   # the number of training epoch
+learning_rate = 0.00001          # learning rate
 model_path = './model.ckpt'     # the path where the checkpoint will be saved
 
 # model parameters
 input_dim = 39 * concat_nframes # the input dim of the model, you should not change the value
-hidden_layers = 3               # the number of hidden layers
+hidden_layers = 7               # the number of hidden layers
 hidden_dim = 256                # the hidden dim
 
 ### Prepare dataset and model
@@ -213,7 +213,12 @@ same_seeds(seed)
 # create model, define a loss function, and optimizer
 model = Classifier(input_dim=input_dim, hidden_layers=hidden_layers, hidden_dim=hidden_dim).to(device)
 criterion = nn.CrossEntropyLoss() 
-optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
+optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=0.01)#, momentum=0.9, weight_decay=0.01)
+
+model.load_state_dict(torch.load('./2_model_10.ckpt')['model_state_dict'])
+optimizer.load_state_dict(torch.load('./2_model_10.ckpt')['optimizer_state_dict'])
+for g in optimizer.param_groups:
+    g['lr'] = learning_rate
 
 ### Training
 train_loss_list, val_loss_list, lrs = [], [], []
@@ -266,9 +271,12 @@ for epoch in range(num_epoch):
             val_loss_list.append(val_loss/len(val_loader))
             lrs.append(optimizer.param_groups[0]["lr"])
             
-            if epoch % 30 == 0:
+            if (epoch+1) % 30 == 0:
                 for g in optimizer.param_groups:
                     g['lr'] *= 0.3
+            
+            if (epoch+1) % 5 == 0:
+                torch.save({'model_state_dict': model.state_dict(), 'optimizer_state_dict':optimizer.state_dict()}, './model_%d.ckpt'%(epoch+1))
             
             # if the model improves, save a checkpoint at this epoch
             if val_acc > best_acc:
